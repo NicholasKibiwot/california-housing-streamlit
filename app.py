@@ -24,6 +24,11 @@ st.markdown("""
     border-radius: 10px;
     color: white;
     text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.metric-card:hover {
+    transform: scale(1.05);
 }
 .prediction-box {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -45,7 +50,6 @@ def load_model():
             model = pickle.load(f)
         return model, "Model loaded from file"
     except:
-        # Load California housing data and train fallback model
         housing_data = fetch_california_housing()
         X = housing_data.data
         y = housing_data.target
@@ -53,6 +57,11 @@ def load_model():
         model = KNeighborsRegressor(n_neighbors=5, metric='euclidean')
         model.fit(X, y)
         return model, "Using fallback model (trained on California housing data)"
+
+if 'selected_metric' not in st.session_state:
+    st.session_state.selected_metric = None
+if 'selected_feature' not in st.session_state:
+    st.session_state.selected_feature = None
 
 model, status = load_model()
 
@@ -96,7 +105,7 @@ with tab1:
             ]])
             
             prediction = model.predict(features)[0]
-            price = prediction * 100000  # Convert to actual price
+            price = prediction * 100000
             
             st.markdown(f'<div class="prediction-box">Estimated Price: ${price:,.2f}</div>', unsafe_allow_html=True)
             
@@ -107,21 +116,43 @@ with tab1:
 with tab2:
     st.header("Model Performance")
     
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("Algorithm Details", key="btn_algo", use_container_width=True):
+            st.session_state.selected_metric = 'algorithm' if st.session_state.selected_metric != 'algorithm' else None
+        
+        st.markdown('<div class="metric-card"><h3>Algorithm</h3><p style="font-size:24px;">KNN</p></div>', unsafe_allow_html=True)
+        
+        if st.session_state.selected_metric == 'algorithm':
+            st.info("K-Nearest Neighbors finds the 5 nearest data points and averages their values to make predictions.")
+    
+    with col2:
+        if st.button("k Value Details", key="btn_k", use_container_width=True):
+            st.session_state.selected_metric = 'k_value' if st.session_state.selected_metric != 'k_value' else None
+        
+        st.markdown('<div class="metric-card"><h3>k Value</h3><p style="font-size:24px;">5</p></div>', unsafe_allow_html=True)
+        
+        if st.session_state.selected_metric == 'k_value':
+            st.info("k=5 balances between overfitting (too small k) and underfitting (too large k).")
+    
+    with col3:
+        if st.button("Distance Details", key="btn_dist", use_container_width=True):
+            st.session_state.selected_metric = 'distance' if st.session_state.selected_metric != 'distance' else None
+        
+        st.markdown('<div class="metric-card"><h3>Distance</h3><p style="font-size:24px;">Euclidean</p></div>', unsafe_allow_html=True)
+        
+        if st.session_state.selected_metric == 'distance':
+            st.info("Euclidean distance: sqrt(sum((x-y)^2)). Measures straight-line distance between points.")
+    
+    st.write("")
+    
     try:
         housing_data = fetch_california_housing()
         X = housing_data.data
         y = housing_data.target
         
         cv_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown(f'<div class="metric-card"><h3>Algorithm</h3><p>KNN</p></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="metric-card"><h3>k Value</h3><p>5</p></div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown(f'<div class="metric-card"><h3>Distance</h3><p>Euclidean</p></div>', unsafe_allow_html=True)
         
         fig, ax = plt.subplots(figsize=(10, 4))
         ax.bar(range(len(cv_scores)), cv_scores, color='#667eea', alpha=0.7)
@@ -138,7 +169,9 @@ with tab2:
 
 with tab3:
     st.header("Feature Guide")
-    features = {
+    st.markdown("Click on any feature to learn more:")
+    
+    features_dict = {
         "Median Income": "Income in tens of thousands",
         "House Age": "Median age of houses in years",
         "Avg Rooms": "Average rooms per household",
@@ -149,6 +182,22 @@ with tab3:
         "Longitude": "Geographic longitude"
     }
     
-    for feature, desc in features.items():
-        st.subheader(feature)
-        st.write(desc)
+    detailed_info = {
+        "Median Income": "Strong predictor of housing prices. Income in tens of thousands of dollars.",
+        "House Age": "Median age of buildings. Newer properties may command different prices.",
+        "Avg Rooms": "More rooms typically mean higher prices and larger properties.",
+        "Avg Bedrooms": "Impacts livability and is a key factor in property valuation.",
+        "Population": "Block density. Affects neighborhood characteristics and pricing.",
+        "Avg Occupancy": "Relates to space requirements and household sizes.",
+        "Latitude": "Location is crucial. North-south position affects prices.",
+        "Longitude": "Combined with latitude, determines exact location on the map."
+    }
+    
+    for idx, (feature, desc) in enumerate(features_dict.items()):
+        if st.button(f"{feature}: {desc}", key=f"feature_{idx}", use_container_width=True):
+            st.session_state.selected_feature = feature if st.session_state.selected_feature != feature else None
+        
+        if st.session_state.selected_feature == feature:
+            st.success(f"📊 {feature}")
+            st.write(detailed_info[feature])
+            st.write("---")
