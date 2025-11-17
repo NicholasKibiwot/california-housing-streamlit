@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings('ignore')
+# Version 2.0 - Model file integration complete
 
 # Page Configuration
 st.set_page_config(
