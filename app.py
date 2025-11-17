@@ -8,7 +8,7 @@ from sklearn.neighbors import KNeighborsRegressor
 
 warnings.filterwarnings('ignore')
 
-# Version 3.0 - Improved model loading with fallback
+# Version 3.1 - Fixed emoji issues in sliders
 # Page Configuration
 st.set_page_config(
     page_title="California Housing Predictor",
@@ -53,12 +53,10 @@ def load_model():
             model = pickle.load(f)
         return model, "Model loaded successfully from pickle file"
     except FileNotFoundError:
-        st.warning("Pickle file not found, creating fallback model...")
         # Create a simple KNN model as fallback
         model = KNeighborsRegressor(n_neighbors=5, metric='euclidean')
         return model, "Using fallback KNN model (requires training data)"
     except Exception as e:
-        st.warning(f"Could not load pickle model ({str(e)}), creating fallback model...")
         # Create a simple KNN model as fallback
         model = KNeighborsRegressor(n_neighbors=5, metric='euclidean')
         return model, "Using fallback KNN model (requires training data)"
@@ -107,26 +105,26 @@ with tab1:
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        MedInc = st.slider('📊 Median Income', min_value=feature_ranges['MedInc'][0], max_value=feature_ranges['MedInc'][1], value=3.0, step=0.1)
-        AveRooms = st.slider('🛏️ Avg Rooms', min_value=feature_ranges['AveRooms'][0], max_value=feature_ranges['AveRooms'][1], value=5.0, step=0.1)
+        MedInc = st.slider('Median Income', min_value=feature_ranges['MedInc'][0], max_value=feature_ranges['MedInc'][1], value=3.0, step=0.1)
+        AveRooms = st.slider('Avg Rooms', min_value=feature_ranges['AveRooms'][0], max_value=feature_ranges['AveRooms'][1], value=5.0, step=0.1)
     
     with col2:
-        HouseAge = st.slider('🏡 House Age', min_value=int(feature_ranges['HouseAge'][0]), max_value=int(feature_ranges['HouseAge'][1]), value=20)
-        AveBedrms = st.slider('🛌 Avg Bedrooms', min_value=feature_ranges['AveBedrms'][0], max_value=feature_ranges['AveBedrms'][1], value=1.0, step=0.1)
+        HouseAge = st.slider('House Age', min_value=int(feature_ranges['HouseAge'][0]), max_value=int(feature_ranges['HouseAge'][1]), value=20)
+        AveBedrms = st.slider('Avg Bedrooms', min_value=feature_ranges['AveBedrms'][0], max_value=feature_ranges['AveBedrms'][1], value=1.0, step=0.1)
     
     with col3:
-        Population = st.slider('👥 Population', min_value=int(feature_ranges['Population'][0]), max_value=int(feature_ranges['Population'][1]), value=1000)
-        AveOccup = st.slider('🏘️ Avg Occupancy', min_value=feature_ranges['AveOccup'][0], max_value=feature_ranges['AveOccup'][1], value=3.0, step=0.1)
+        Population = st.slider('Population', min_value=int(feature_ranges['Population'][0]), max_value=int(feature_ranges['Population'][1]), value=1000)
+        AveOccup = st.slider('Avg Occupancy', min_value=feature_ranges['AveOccup'][0], max_value=feature_ranges['AveOccup'][1], value=3.0, step=0.1)
     
     with col4:
-        Latitude = st.slider('🧭 Latitude', min_value=feature_ranges['Latitude'][0], max_value=feature_ranges['Latitude'][1], value=34.0, step=0.1)
-        Longitude = st.slider('📍 Longitude', min_value=feature_ranges['Longitude'][0], max_value=feature_ranges['Longitude'][1], value=-118.0, step=0.1)
+        Latitude = st.slider('Latitude', min_value=feature_ranges['Latitude'][0], max_value=feature_ranges['Latitude'][1], value=34.0, step=0.1)
+        Longitude = st.slider('Longitude', min_value=feature_ranges['Longitude'][0], max_value=feature_ranges['Longitude'][1], value=-118.0, step=0.1)
     
     # Prepare input data
     input_data = np.array([[MedInc, HouseAge, AveRooms, AveBedrms, Population, AveOccup, Latitude, Longitude]])
     
     # Make prediction
-    if st.button('🔮 Predict Price', use_container_width=True):
+    if st.button('Predict Price', use_container_width=True):
         try:
             prediction = model.predict(input_data)[0]
             # Scale prediction (model output is in hundreds of thousands)
@@ -204,12 +202,12 @@ with tab3:
     
     for feature, description in feature_descriptions.items():
         min_val, max_val = feature_ranges[feature]
-        st.subheader(f"📌 {feature}")
+        st.subheader(f"{feature}")
         st.write(f"**Description:** {description}")
         st.write(f"**Range:** {min_val} - {max_val}")
         st.divider()
     
-    st.success("✅ All features are ready for prediction!")
+    st.success("All features are ready for prediction!")
     st.markdown("""
     ### Tips for Better Predictions:
     - Use realistic values within the specified ranges
