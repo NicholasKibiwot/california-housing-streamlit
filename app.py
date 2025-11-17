@@ -46,16 +46,38 @@ st.markdown("""
 # Model Loading Function with Caching
 @st.cache_resource
 def load_model():
-    """Load the pre-trained KNN model from pickle file."""
+    """Load the pre-trained KNN model from pickle file or download if needed."""
+    import os
+    import requests
+    
     try:
+        # First try loading from local file
         with open('california_knn_pipeline.pkl', 'rb') as f:
             model = pickle.load(f)
         return model, None
     except FileNotFoundError:
-        return None, "Model file 'california_knn_pipeline.pkl' not found in the repository."
-    except Exception as e:
-        return None, f"Error loading model: {str(e)}"
-
+        try:
+            # Try downloading from a public source (Kaggle output URL)
+            model_url = "https://www.kaggle.com/code/nicholaskibiwot254/nicholas-kibiwot-cs-da02-25060-mlops/notebook/nicholas-kibiwot-cs-da02-25060-mlops.ipynb"
+            
+            # Alternative: try to load from GitHub releases if available
+            github_url = "https://github.com/NicholasKibiwot/california-housing-streamlit/releases/download/v1.0/california_knn_pipeline.pkl"
+            
+            try:
+                response = requests.get(github_url, timeout=10)
+                if response.status_code == 200:
+                    import io
+                    model = pickle.load(io.BytesIO(response.content))
+                    # Save locally for future use
+                    with open('california_knn_pipeline.pkl', 'wb') as f:
+                        f.write(response.content)
+                    return model, None
+            except:
+                pass
+            
+            return None, "Model file 'california_knn_pipeline.pkl' not found. Please download from Kaggle and add to repository."
+        except Exception as e:
+            return None, f"Error: {str(e)}"
 # Load Model
 model, error_msg = load_model()
 
