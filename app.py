@@ -9,6 +9,7 @@ from sklearn.neighbors import KNeighborsRegressor
 warnings.filterwarnings('ignore')
 
 # Version 3.1 - Fixed emoji issues in sliders
+# Force redeploy - fixes slider emoji rendering issues
 # Page Configuration
 st.set_page_config(
     page_title="California Housing Predictor",
