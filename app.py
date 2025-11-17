@@ -3,8 +3,6 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.metrics import r2_score, mean_squared_error
 import warnings
 warnings.filterwarnings('ignore')
 
